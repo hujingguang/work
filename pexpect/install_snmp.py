@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import pexpect,sys
 
+Log=open('/tmp/installsnmp.log','w')
 
 def up_script(ip,passwd):
     ch=pexpect.spawn('scp /etc/snmp/snmpd.conf root@%s:/etc/snmp/' %ip)
-    ch.logfile=sys.stdout
+    ch.logfile=Log
     index=ch.expect(['(yes/no)','assword:',pexpect.EOF,pexpect.TIMEOUT])
     if index==0:
         ch.sendline('yes\n')
@@ -16,7 +17,7 @@ def up_script(ip,passwd):
 
 def run_script(ip,passwd,user):
     ch=pexpect.spawn('ssh %s@%s' %(user,ip))
-    ch.logfile=sys.stdout
+    ch.logfile=Log
     index=ch.expect(['(yes/no)','assword:',pexpect.EOF,pexpect.TIMEOUT])
     if index==0:
         ch.sendline('yes\n')
@@ -29,5 +30,6 @@ def run_script(ip,passwd,user):
     ch.expect([']#',pexpect.EOF,pexpect.TIMEOUT])
     ch.sendline('nohup /root/tmp/test.sh\n')
     ch.close(force=True)
-
+    Log.close() 
 if __name__=='__main__':
+    run_script('wikiki.cn',passwd,'root')

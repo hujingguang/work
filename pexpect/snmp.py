@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os,commands
+import os
 
 def epel():
     res=os.system('wget http://mirrors.sohu.com/fedora-epel/epel-release-latest-6.noarch.rpm -P /tmp -o /tmp/installsnmp.log')
