@@ -21,9 +21,8 @@ def snmp_conf():
     f.write(content)
     f.close()
 def start_snmp():
-    r=os.system('rpm -qa|grep epel')
-    if r!=0:
-        epel()
+    os.system('rpm -qa|grep epel|xargs rpm -e')
+    epel()
     snmp_conf()
     res=os.system('service snmpd start &>/tmp/installsnmp.log')
 
