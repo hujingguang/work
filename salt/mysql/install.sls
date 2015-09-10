@@ -21,7 +21,7 @@ adduser:
 unpack:
   cmd.run:
     - cwd: /tmp
-    - name: tar -xvzf mysql-5.6.10.tar.gz && mv mysql-5.6.10 mysql
+    - name: tar -xvzf mysql-5.6.10.tar.gz
     - require:
       - file: uptar
     - unless: test -d /tmp/mysql
@@ -39,8 +39,7 @@ cmake:
 
 configure:
   cmd.run:
-    - cwd: /tmp/mysql
-    - name: cmake -DCMAKE_INSTALL_PREFIX={{ base_dir }} -DMYSQL_DATADIR={{ data_dir }} -DSYSCONFIGDIR={{ base_dir }} -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_MEMORY_STORAGE_ENGINE=1 -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DENABLED_LOCAL_INFILE=1 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DEXTRA_CHARSET=utf8 -DWITH_USER={{ mysql_user }} && make && make install
+    - name: cd /tmp/mysql-5.6.10 && cmake -DCMAKE_INSTALL_PREFIX={{ base_dir }} -DMYSQL_DATADIR={{ data_dir }} -DSYSCONFIGDIR={{ base_dir }} -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_MEMORY_STORAGE_ENGINE=1 -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DENABLED_LOCAL_INFILE=1 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DEXTRA_CHARSET=utf8 -DWITH_USER={{ mysql_user }} && make && make install
     - require:
       - pkg: cmake
       - cmd: unpack
@@ -52,7 +51,7 @@ up_myconf:
     - source: salt://mysql/files/my.cnf
     - mode: 666
     - user: {{ mysql_user }}
-    - template:
+    - template: jinjia
     - defaults:
       base_dir: {{ base_dir }}
       data_dir: {{ data_dir }}
@@ -89,7 +88,7 @@ init_database:
 
 start_mysqlserver:
   cmd.run:
-    - name: {{ base_dir }}/mysql.server
+    - name: {{ base_dir }}/mysql.server restart
     - watch:
       - cmd: init_database
       - file: up_myconf
