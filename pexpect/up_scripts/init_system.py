@@ -55,8 +55,12 @@ def main():
     if res != 0:
         epel()
     configure_env()
-    load_kernel_mod()
-    optimize_kernel()
+    res=os.system('grep "modprobe bridge" /etc/rc.local')
+    if res != 0:
+        optimize_kernel()
+    res=os.system('grep "ulimit -n" /etc/profile')
+    if res!=0:
+        load_kernel_mod()
     close_useless_server()
     Log.write('Init system successed !! ')
     Log.close()
