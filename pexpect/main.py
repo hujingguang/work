@@ -4,9 +4,12 @@ import os
 from utils import put_pubkey
 
 
-def main(script_path,hostfile):
+def main(script_path,putkey,first_put,hostfile):
     global Log
-    putkey=True 
+    if not os.path.exists(script_path):
+        Log.write('script not exists!! %s ' %script_path)
+        Log.close()
+        exit()
     n=script_path.rfind('/')
     script_name=script_path[n+1:]
     if putkey:
@@ -15,7 +18,7 @@ def main(script_path,hostfile):
             Log.write('the hostfile %s not exisits! \n' %hostfile)
             Log.close()
             exit()
-        hosts=put_pubkey(hostfile,Log)
+        hosts=put_pubkey(hostfile,first_put,Log)
         for h in hosts:
             #pexpect.spawn('scp %s root@%s:/tmp' %(script_path,h))
             os.system('scp %s root@%s:/tmp' %(script_path,h))
@@ -68,8 +71,15 @@ Host_File='/root/tmp/work/pexpect/hosts'
 global Log
 Log=open('/tmp/python_run.log','a')
 
+
+'''
+   the var pubkey :  True express  put ssh pubkey to the client
+   the var first:    False  express it has been  put the keys from server
+'''
 if __name__=='__main__':
-    main(Script,Host_File)
+    pubkey=True
+    first=False
+    main(Script,pubkey,first,Host_File)
 
 
 

@@ -2,9 +2,8 @@ import os
 import pexpect
 
 
-def put_pubkey(path,Log):
+def put_pubkey(path,first,Log):
     f=open(path,'r')
-    first=False
     H=[]
     for line in f.readlines():
         hp=line.split(':')
@@ -17,6 +16,8 @@ def put_pubkey(path,Log):
                 ch.close(force=True)
             else:
                 Log.write('the host:%s put pubkey failured \n' %hp[0])
+        
+
     return H
 
 
