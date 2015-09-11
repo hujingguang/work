@@ -25,7 +25,7 @@
 # Description: MySQL is a very fast and reliable SQL database engine.
 ### END INIT INFO
  
-# If you install MySQL on some other places than @prefix@, then you
+# If you install MySQL on some other places than /soft/mysql, then you
 # have to do one of the following things for this script to work:
 #
 # - Run this script from within the MySQL installation directory
@@ -63,14 +63,14 @@ lock_file_path="$lockdir/mysql"
 mysqld_pid_file_path=
 if test -z "$basedir"
 then
-  basedir=@prefix@
-  bindir=@bindir@
+  basedir=/soft/mysql
+  bindir=/soft/mysql/bin
   if test -z "$datadir"
   then
-    datadir=@localstatedir@
+    datadir=/data
   fi
-  sbindir=@sbindir@
-  libexecdir=@libexecdir@
+  sbindir=/soft/mysql/bin
+  libexecdir=/soft/mysql/bin
 else
   bindir="$basedir/bin"
   if test -z "$datadir"
@@ -260,7 +260,7 @@ parse_server_arguments `$print_defaults $extra_args mysqld server mysql_server m
 #
 if test -z "$mysqld_pid_file_path"
 then
-  mysqld_pid_file_path=$datadir/`@HOSTNAME@`.pid
+  mysqld_pid_file_path=$datadir/`hostname`.pid
 else
   case "$mysqld_pid_file_path" in
     /* ) ;;

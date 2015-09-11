@@ -2,6 +2,7 @@
 {% set data_dir = '/data/mysql' %}
 {% set mysql_user = 'mysql' %}
 {% set mysql_group = 'mysql' %}
+{% set configure_args = '-DCMAKE_INSTALL_PREFIX=%s -DMYSQL_DATADIR=%s -DSYSCONFIGDIR=%s -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_MEMORY_STORAGE_ENGINE=1 -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DENABLED_LOCAL_INFILE=1 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DEXTRA_CHARSET=utf8 -DWITH_USER=%s' %(base_dir,data_dir,base_dir,mysql_user)%}
 
 uptar:
   file.managed:
@@ -21,7 +22,7 @@ adduser:
 unpack:
   cmd.run:
     - cwd: /tmp
-    - name: tar -xvzf mysql-5.6.10.tar.gz
+    - name: tar -xvzf mysql-5.6.10.tar.gz && mv mysql-5.6.10 mysql
     - require:
       - file: uptar
     - unless: test -d /tmp/mysql
@@ -39,7 +40,7 @@ cmake:
 
 configure:
   cmd.run:
-    - name: cd /tmp/mysql-5.6.10 && cmake -DCMAKE_INSTALL_PREFIX={{ base_dir }} -DMYSQL_DATADIR={{ data_dir }} -DSYSCONFIGDIR={{ base_dir }} -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_MEMORY_STORAGE_ENGINE=1 -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DENABLED_LOCAL_INFILE=1 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DEXTRA_CHARSET=utf8 -DWITH_USER={{ mysql_user }} && make && make install
+    - name: cd /tmp/mysql && cmake {{ configure_args }} && make && make install
     - require:
       - pkg: cmake
       - cmd: unpack
@@ -51,7 +52,7 @@ up_myconf:
     - source: salt://mysql/files/my.cnf
     - mode: 666
     - user: {{ mysql_user }}
-    - template: jinjia
+    - template: jinja
     - defaults:
       base_dir: {{ base_dir }}
       data_dir: {{ data_dir }}
@@ -88,7 +89,7 @@ init_database:
 
 start_mysqlserver:
   cmd.run:
-    - name: {{ base_dir }}/mysql.server restart
+    - name: {{ base_dir }}/mysql.server start
     - watch:
       - cmd: init_database
       - file: up_myconf
