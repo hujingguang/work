@@ -80,7 +80,6 @@ start_zabbix:
   service.running:
     - name: zabbix_agentd
     - enable: True
-    - reload: True
     - watch:
       - file: zabbix_conf
 
