@@ -54,7 +54,7 @@ zabbix_conf:
     - template: jinja
     - defaults:
         server: {{ server }}
-        hostname: {{ grains['host'] }}
+        hostname: {{ grains['ip4_interfaces']['eth1'][0] }}
         server_active: {{ server_active }}
     - require:
       - cmd: install_zabbix
@@ -66,6 +66,8 @@ up_server_scripts:
     - template: jinja
     - defaults:
         zabbix_dir: {{ zabbix_dir }}
+  cmd.run:
+    - name: chmod +x /etc/init.d/zabbix_agentd
 
 chkconfig_zabbix:
   cmd.run: 
@@ -75,8 +77,10 @@ chkconfig_zabbix:
     - unless: chkconfig --list zabbix_agentd
 
 start_zabbix:
-  cmd.run:
-    - name: service zabbix_agentd restart
-    - unless: lsof -i:10050 
-
+  service.running:
+    - name: zabbix_agentd
+    - enable: True
+    - reload: True
+    - watch:
+      - file: zabbix_conf
 
