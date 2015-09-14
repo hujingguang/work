@@ -7,7 +7,7 @@ from utils import put_pubkey
 def main(script_path,putkey,first_put,hostfile):
     global Log
     if not os.path.exists(script_path):
-        Log.write('script not exists!! %s ' %script_path)
+        Log.write('script not exists!! %s \n' %script_path)
         Log.close()
         exit()
     n=script_path.rfind('/')
