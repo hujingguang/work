@@ -62,8 +62,17 @@ install_ganglia:
 
 up_scripts:
   file.managed:
-   - name: /etc/ganglia/gmond.conf
+   - name: /soft/ganglia/etc/gmond.conf
    - source: salt://ganglia/files/gmond.conf
+   - template: jinja
+   - defaults:
+     hostname: {{ grains['host'] }} 
+     ip_addr: {{ grains['ip4_interfaces']['eth1'][0] }}   
+  cmd.run:
+   - name: ln -s /soft/ganglia/etc/gmond.conf /etc/ganglia/
+   - require:
+     - cmd: install_ganglia
+   - unless: test -f /etc/ganglia/gmond.conf
 
 up_server_scripts:
   file.managed:
@@ -81,7 +90,3 @@ start_gmond:
     - watch:
       - file: up_server_scripts
   
-bind_ip:
-  cmd.run:
-    - name: ip route add 239.2.11.71 dev eth1 
-
