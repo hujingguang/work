@@ -4,7 +4,6 @@
 import os
 import pexpect
 import logging
-import commands
 import re
 
 ROOT_CONF_DIR='/data/rsyncback/service_conf'
