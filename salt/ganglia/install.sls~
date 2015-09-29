@@ -54,7 +54,7 @@ unzip_ganglia:
 
 install_ganglia:
   cmd.run:
-    - name: cd /tmp/ganglia-3.7.2 && ./configure --prefix=/soft/ganglia --enable-perl --enable-status --with-zlib  --with-python=/usr/bin/python --with-librrd=/usr/local/rrdtool --with-php --with-libapr --enable-php --with-libpcre && make && make install
+    - name: cd /tmp/ganglia-3.7.2 && ./configure --prefix=/soft/ganglia --enable-perl --enable-status --with-zlib  --enable-python --with-librrd=/usr/local/rrdtool --with-php --with-libapr --enable-php --with-libpcre && make && make install
     - require:
       - cmd: unzip_ganglia
       - pkg: configure_ganglia_env
