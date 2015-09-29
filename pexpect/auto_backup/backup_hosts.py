@@ -9,21 +9,23 @@ import re
 
 ROOT_CONF_DIR='/data/rsyncback/service_conf'
 RE_IP=re.compile(r'^192\.168\.16([89]?)\..*')
-Services_Name=['nginx','mysql']
+Services_Name=['nginx','mysql','vsftpd']
 
 
 def parse_conf(root_dir):
     global RE_IP
     Service_Hosts={} 
     if not os.path.exists(root_dir):
-        logging.error('the root_dir %s not exists!' %root_dir)
+        #logging.error('the root_dir %s not exists!' %root_dir)
+        print "error:root configure direcotry:%s not exists" %root_dir
         exit(1)
     for sd in Services_Name:
         host_info={}
         ips=[]
         abs_conf=os.path.abspath(root_dir)+'/'+sd+'/'+'conf'
         if not os.path.exists(abs_conf):
-            logging.error('the service conf file : %s  not exists!!' %abs_conf)
+            #logging.error('the service conf file : %s  not exists!!' %abs_conf)
+            print "error: the service conf file: %s not exists!!" %abs_conf
             exit(1)
         f=open(abs_conf,'r')
         for line in f.readlines():
@@ -34,6 +36,9 @@ def parse_conf(root_dir):
                 line=line.strip()
                 if RE_IP.match(line):
                     ips.append(line.replace('\n',''))
+                else:
+                    #logging.warning('the host %s can not  match ' %line)
+                    print "warning:host:%s can not match" %line.split(':')[0]
         host_info[sd]=ips
         Service_Hosts[sd]=host_info
     return Service_Hosts
@@ -68,19 +73,26 @@ def backup(path,hosts,service_name):
             ch=pexpect.spawn(new_cmd)
             res=ch.expect(['yes','assword:',pexpect.EOF],timeout=120)
             if res == 0:
+                logging.info('begin to connect the host: %' %host)
                 ch.sendline('yes')
                 ch.sendline(passwd+'\n')
                 ch.expect([']#',pexpect.EOF],timeout=180)
                 ch.close()
+                res=os.system('ls %s |grep "" ' %local_path)
             elif res == 1:
                 ch.sendline(passwd+'\n')
                 ch.expect([']#',pexpect.EOF],timeout=180)
                 ch.close()
             else:
-                logging.error('connect host: %s  failed!!' %host)
+                #logging.error('connect host: %s  failed!!' %host)
+                print "error:connect host: %s failed " %host
                 ch.close()
+            out=os.system('ls %s|grep "" >/dev/null' %local_path)
+            if out !=0:
+                #logging.error('host: %s backup_dir: %s backup error ! ' %(host,path))
+                print "error:host:%s backup direcotry:%s rsync failed !" %(host,path)
         else:
-            list_cmd=r'ssh %s "du -sh  %s" >/tmp/outputs ' %(host,pattern_path)
+            list_cmd=r'ssh %s "ls -d  %s" >/tmp/output ' %(host,pattern_path)
             logging.info('grep pattern dirs %s' %list_cmd)
             if os.path.exists('/tmp/tmp_shell.sh'):
                  os.system('rm -rf /tmp/tmp_shell.sh')
@@ -89,27 +101,23 @@ def backup(path,hosts,service_name):
             shell.close() 
             new_cmd='bash /tmp/tmp_shell.sh'
             ch=pexpect.spawn(new_cmd)
-            res=ch.expect(['yes/no','assword:',pexpect.EOF],timeout=60)
+            res=ch.expect(['yes/no','assword:',pexpect.EOF,pexpect.TIMEOUT],timeout=60)
             if res ==0:
                 ch.sendline('yes')
                 ch.sendline(passwd+'\n')
-                ch.expect([']#',pexpect.EOF],timeout=120)
+                ch.expect([']#',pexpect.EOF,pexpect.TIMEOUT],timeout=120)
                 ch.close()
             elif res==1:
                 ch.sendline(passwd+'\n')
-                ch.expect([']#',pexpect.EOF],timeout=120)
+                ch.expect([']#',pexpect.EOF,pexpect.TIMEOUT],timeout=120)
                 ch.close()
             else:
-                logging.error('connect host: %s faild for get mysql dir' %host)
+                logging.error('try connect the host: %s error ' %host)
                 ch.close(force=True)
                 continue
-            if not os.path.exists('/tmp/outputs'):
-                logging.error('/tmp/outputs not exists')
-                exit(1)
-            os.system(r"cat /tmp/outputs|awk '{print $2}' >/tmp/output")
             if not os.path.exists('/tmp/output'):
                 logging.error('/tmp/output not exists')
-                exit(1) 
+                continue
             f=open('/tmp/output','r')
             for L in f.readlines():
                 remote_dir=L.replace('\n','')
@@ -131,8 +139,12 @@ def backup(path,hosts,service_name):
                     ch.expect([']#',pexpect.EOF],timeout=120)
                     ch.close()
                 else:
-                    logging.error('run cmd: %s  failed !'%cmd)
+                    logging.error('run cmd: %s  error !'%cmd)
                     ch.close(force=True)
+                out=os.system('ls %s |grep "" >/dev/null ' %s_dir)
+                if out !=0:
+                    #logging.error('the host: %s  backup file: %s  error ' %(host,remote_dir))
+                    print "error:host:%s backup direcotry:%s rsync failed!" %(host,remote_dir) 
 
 def main():
     global ROOT_CONF_DIR,Services_Name
