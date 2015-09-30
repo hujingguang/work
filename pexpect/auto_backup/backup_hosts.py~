@@ -76,6 +76,7 @@ def backup(path,hosts,service_name):
                 ch.sendline(passwd+'\n')
                 ch.expect([']#',pexpect.EOF],timeout=180)
                 ch.close()
+                res=os.system('ls %s |grep "" ' %local_path)
             elif res == 1:
                 ch.sendline(passwd+'\n')
                 ch.expect([']#',pexpect.EOF],timeout=180)
