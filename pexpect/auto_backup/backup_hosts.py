@@ -1,12 +1,11 @@
 #!/usr/bin/python
-
-
 import os
 import pexpect
 import logging
 import re
+__author__='Hujg'
 
-ROOT_CONF_DIR='/data/rsyncback/service_conf'
+ROOT_DIR='/data/rsyncback/service_conf'
 RE_IP=re.compile(r'^192\.168\.16([89]?)\..*')
 Services_Name=['nginx','mysql','vsftpd']
 
@@ -50,7 +49,7 @@ def backup(path,hosts,service_name):
     if n != -1:
         has_pattern=True
         pattern_path=path[:n+1]
-    base_path=os.path.abspath(ROOT_CONF_DIR)+'/'+service_name
+    base_path=os.path.abspath(ROOT_DIR)+'/'+service_name
     hosts.reverse()
     for v in hosts:
         host,port,passwd=v.split(':')
@@ -146,27 +145,15 @@ def backup(path,hosts,service_name):
                     print "error:host:%s backup direcotry:%s rsync failed!" %(host,remote_dir) 
 
 def main():
-    global ROOT_CONF_DIR,Services_Name
+    global ROOT_DIR,Services_Name
     if os.path.exists('/tmp/output'):
         os.system('rm -rf /tmp/output') 
-    Sev_Dict=parse_conf(ROOT_CONF_DIR)
+    Sev_Dict=parse_conf(ROOT_DIR)
     for s in Services_Name:
         if s in Sev_Dict:
             hosts=Sev_Dict[s][s]
             path=Sev_Dict[s][s+'_dir']
             backup(path,hosts,s)
 
-
 if __name__ == '__main__':
     main()
-
-
-
-            
-
-    
-
-    
-
-
-
