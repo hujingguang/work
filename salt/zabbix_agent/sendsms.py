@@ -5,12 +5,19 @@ import commands
 '''
 zabbix messages configure
   {
-    "app_id":id;
-    "eventType":(trigger,resolve);
-    "eventid": {EVENT.ID};
-    "alarmName":{TRIGGER.STATUS}:{TRIGGER.NAME};
-    "alermContent":{TRIGGER.DESCRIPTION}
-    "priority":{TRIGGER.SERVERITY} 'High,','Warning','Average','Disaster' 1,2,3
+    Default Subject: trigger (or) resolve
+
+
+    Default Messages:
+         
+    alarmName:{TRIGGER.STATUS}*{TRIGGER.NAME}*{IPADDRESS}
+    alarmContent:{TRIGGER.DESCRIPTION}
+    priority:{TRIGGER.SEVERITY}
+    eventId:{EVENT.ID}
+    value:
+    entityName:
+    entityId:
+
 
   }
 '''
@@ -68,9 +75,12 @@ def send_mesg(mesg_dict):
     params['priority']=priority
     params['alarmContent']=alarmContent
     cmd=''' curl -H "Content-type: application/json" -X POST -d"%s" "http://api.110monitor.com/alert/api/event" -o /tmp/xixi.log''' %params
-    params_str=urllib.urlencode(params)
-    URL="http://api.110monitor.com/alert/api/event?%s" %params_str
+    #params_str=urllib.urlencode(params)
+    #URL="http://api.110monitor.com/alert/api/event?%s" %params_str
     res,ouput=commands.getstatusoutput(cmd)
+    f=open('/tmp/ms','w')
+    f.write(cmd)
+    f.close()
 if __name__=='__main__':
     send_mesg(parse_args(sys.argv[1],sys.argv[2],sys.argv[3]))
 
