@@ -56,6 +56,7 @@ def compile_php():
     if res!=0:
         os.system('useradd %s -s /sbin/nologin' %PHP_Run_User)
     os.system("cp %s/php/etc/php-fpm.conf.default %/php/etc/php-fpm.conf " %(SOFT_DIR,SOFT_DIR))
+    os.system("cp /tmp/php-%s/php.ini-production %s/php/etc/php.ini" %(PHP_Version,SOFT_DIR))
 def compile_tengine():
     configure_args=''' --prefix=%s/tengine --with-jemalloc --with-jemalloc=/tmp/jemalloc-%s --with-http_ssl_module --user=%s --group=%s --with-pcre --with-http_spdy_module --with-http_upstream_session_sticky_module=shared ''' %(SOFT_DIR,Jemalloc_Version,Tengine_Run_User,Tengine_Run_User)
     cmd=''' wget http://web.wikiki.cn/jemalloc-%s.tar.bz2 &>/dev/null && mv jemalloc-%s.tar.bz2 /tmp && cd /tmp && tar -xjf jemalloc-%s.tar.bz2 ''' %(Jemalloc_Version,Jemalloc_Version,Jemalloc_Version)
@@ -207,8 +208,8 @@ def generate_deamon_scripts():
             os.system("echo 'add php-fpm deamon failed ' >> /tmp/install.log")
     if not os.path.exists("/etc/init.d/nginx"):
         nginx_script=open("/etc/init.d/nginx","w")
-        nginx_script=write(nginx_script_contents)
-        nginx_script=close()
+        nginx_script.write(nginx_script_contents)
+        nginx_script.close()
         res=os.system("chmod +x /etc/init.d/nginx && chkconfig --add nginx && chkconfig --level 35 nginx on ")
         if res!=0:
             os.system("echo 'add nginx deamon faild ' >>/tmp/install.log ")

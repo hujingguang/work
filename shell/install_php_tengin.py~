@@ -207,8 +207,8 @@ def generate_deamon_scripts():
             os.system("echo 'add php-fpm deamon failed ' >> /tmp/install.log")
     if not os.path.exists("/etc/init.d/nginx"):
         nginx_script=open("/etc/init.d/nginx","w")
-        nginx_script=write(nginx_script_contents)
-        nginx_script=close()
+        nginx_script.write(nginx_script_contents)
+        nginx_script.close()
         res=os.system("chmod +x /etc/init.d/nginx && chkconfig --add nginx && chkconfig --level 35 nginx on ")
         if res!=0:
             os.system("echo 'add nginx deamon faild ' >>/tmp/install.log ")
@@ -226,7 +226,7 @@ def start_install():
     if not os.path.exists('%s/tengine' %SOFT_DIR):
         compile_tengine()
     print "Ok .....  php and tengine is installed "
-    generate_daemon_scripts()
+    generate_deamon_scripts()
 
 if __name__=="__main__":
     start_install()
