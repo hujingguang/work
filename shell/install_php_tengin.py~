@@ -16,7 +16,7 @@ def check_network():
         os.system("echo 'network is unabled' >%s" %LOG_FILE)
     res=os.system("nslookup www.baidu.com &>/dev/null")
     if res!=0:
-        os.system("echo 'nameserver  223.5.5.5 ' >>/etc/resolv.conf")
+        os.system("echo 'nameserver  223.5.5.5\nnameserver 112.124.47.27 ' >>/etc/resolv.conf")
 def install_epel():
     res=os.system('rpm -qa|grep epel &>/dev/null')
     if res !=0:

@@ -11,7 +11,7 @@ Jemalloc_Version="3.6.0"          # the available version is: 4.0.4, 3.6.0
 PHP_Run_User="www"
 Tengine_Run_User="www"
 def check_network():
-    res=os.system("ping -c 1 -i 1 www.baidu.com &>/dev/null")
+    res=os.system("ping -c 1 -i 1 120.24.239.32 &>/dev/null")
     if res !=0:
         os.system("echo 'network is unabled' >%s" %LOG_FILE)
     res=os.system("nslookup www.baidu.com &>/dev/null")
