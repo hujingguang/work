@@ -14,6 +14,7 @@ def check_network():
     res=os.system("ping -c 1 -i 1 120.24.239.32 &>/dev/null")
     if res !=0:
         os.system("echo 'network is unabled' >%s" %LOG_FILE)
+        exit(1)
     res=os.system("nslookup www.baidu.com &>/dev/null")
     if res!=0:
         os.system("echo 'nameserver  223.5.5.5\nnameserver 112.124.47.27 ' >>/etc/resolv.conf")
