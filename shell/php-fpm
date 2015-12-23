@@ -1,0 +1,55 @@
+#!/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/webdata/opt/local/mysql/bin
+export PATH
+pid_dir=/webdata/opt/local/php/var/run
+. /etc/sysconfig/network
+. /etc/init.d/functions
+[ "$NETWORKING" = "no" ] && exit 0
+php_fpm="/webdata/opt/local/php/sbin/php-fpm"
+PHP_CONF_FILE=/webdata/opt/local/php/etc/php.ini
+prog=$(basename $php_fpm)
+lockfile=/var/lock/subsys/php-fpm.lock
+php_fpm_pid="/webdata/opt/local/php/var/run/php-fpm.pid"
+ulimit -SHn 65535 
+start() {
+[ -x $php_fpm ] || exit 1
+[ -f $PHP_CONF_FILE ] || exit 2
+echo -n $"Starting $prog: "
+daemon --pidfile $php_fpm_pid $php_fpm -c $PHP_CONF_FILE
+retval=$?
+[ $retval -eq 0 ] && touch $lockfile
+return $retval
+}
+php_fpm_status() {
+status -p $php_fpm_pid $prog
+}
+stop() {
+echo -n $"Stopping $prog: "
+killproc -p $php_fpm_pid $prog -QUIT
+sleep 5
+retval=$?
+echo
+[ $retval -eq 0 ] && rm -f $lockfile
+return $retval
+}
+restart() {
+stop
+start
+}
+case "$1" in
+start)
+start
+;;
+stop)
+stop
+;;
+restart)
+restart
+;;
+status)
+php_fpm_status
+;;
+*)
+echo $"Usage: $0 {start|stop|status|restart}"
+exit 2
+esac
