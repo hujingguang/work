@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import os
-
+__author__='Hoo'
 SOFT_DIR="/webdata/opt/local"
 LOG_FILE="/tmp/install.log"
 CentOS_Version="6"
@@ -72,6 +72,10 @@ def compile_tengine():
     if res!=0:
         os.system("echo 'compile tengine failed '>/tmp/install.log")
         exit()
+    res=os.system(r"egrep '^%s' /etc/passwd " %Tengine_Run_User)
+    if res!=0:
+        os.system('useradd %s -s /sbin/nologin' %Tengine_Run_User)
+
 def start_install():
     check_network()
     install_epel()
