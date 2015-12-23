@@ -52,10 +52,10 @@ def compile_php():
     if res !=0:
         os.system("echo 'make and make install failed' >%s" %LOG_FILE)
         exit()
-    res=os.system(r"egrep '^%s' /etc/passwd" %PHP_Run_User)
+    res=os.system(r"egrep '^%s' /etc/passwd &>/dev/null" %PHP_Run_User)
     if res!=0:
         os.system('useradd %s -s /sbin/nologin' %PHP_Run_User)
-    os.system("cp %s/php/etc/php-fpm.conf.default %/php/etc/php-fpm.conf " %(SOFT_DIR,SOFT_DIR))
+    os.system("cp %s/php/etc/php-fpm.conf.default %s/php/etc/php-fpm.conf " %(SOFT_DIR,SOFT_DIR))
     os.system("cp /tmp/php-%s/php.ini-production %s/php/etc/php.ini" %(PHP_Version,SOFT_DIR))
 def compile_tengine():
     configure_args=''' --prefix=%s/tengine --with-jemalloc --with-jemalloc=/tmp/jemalloc-%s --with-http_ssl_module --user=%s --group=%s --with-pcre --with-http_spdy_module --with-http_upstream_session_sticky_module=shared ''' %(SOFT_DIR,Jemalloc_Version,Tengine_Run_User,Tengine_Run_User)
@@ -64,7 +64,7 @@ def compile_tengine():
     if res!=0:
         os.system("echo 'install jemalloc failed ' >/tmp/install.log")
         exit()
-    cmd='''wget http://tengine.taobao.org/download/tengine-%s.tar.gz &>/dev/null&& mv tengine-%s.tar.gz /tmp && cd /tmp && tar -zxf tengine-%s.tar.gz ''' %(Tengine_Version,Tengine_Version,Tengine_Version)
+    cmd='''wget http://web.wikiki.cn/tengine-%s.tar.gz &>/dev/null&& mv tengine-%s.tar.gz /tmp && cd /tmp && tar -zxf tengine-%s.tar.gz ''' %(Tengine_Version,Tengine_Version,Tengine_Version)
     res=os.system(cmd)
     if res!=0:
         os.system("echo 'get tengine source failed ' >/tmp/install.log")
@@ -74,7 +74,7 @@ def compile_tengine():
     if res!=0:
         os.system("echo 'compile tengine failed '>/tmp/install.log")
         exit()
-    res=os.system(r"egrep '^%s' /etc/passwd " %Tengine_Run_User)
+    res=os.system(r"egrep '^%s' /etc/passwd &>/dev/null" %Tengine_Run_User)
     if res!=0:
         os.system('useradd %s -s /sbin/nologin' %Tengine_Run_User)
 
@@ -203,14 +203,14 @@ def generate_deamon_scripts():
         php_fpm_script=open("/etc/init.d/php-fpm","w")
         php_fpm_script.write(php_script_contents)
         php_fpm_script.close()
-        res=os.system("chmod +x /etc/init.d/php-fpm && chkconfig --add php-fpm && chkconfig --level 35 php-fpm on ")
+        res=os.system("chmod +x /etc/init.d/php-fpm ")
         if res!=0:
             os.system("echo 'add php-fpm deamon failed ' >> /tmp/install.log")
     if not os.path.exists("/etc/init.d/nginx"):
         nginx_script=open("/etc/init.d/nginx","w")
         nginx_script.write(nginx_script_contents)
         nginx_script.close()
-        res=os.system("chmod +x /etc/init.d/nginx && chkconfig --add nginx && chkconfig --level 35 nginx on ")
+        res=os.system("chmod +x /etc/init.d/nginx ")
         if res!=0:
             os.system("echo 'add nginx deamon faild ' >>/tmp/install.log ")
 
