@@ -241,7 +241,7 @@ def compile_mysql():
     res=os.system(cmd)
     if res!=0:
         os.system("echo 'add mysqld start scripts failed '>/tmp/install.log")
-    res=os.system(r"egrep '^%s' /etc/passwd" %Mysql_Run_User)
+    res=os.system(r"egrep '^%s' /etc/passwd &>/dev/null" %Mysql_Run_User)
     if res!=0:
         os.system("chown -R %s:%s %s/mysql" %(Mysql_Run_User,Mysql_Run_User,SOFT_DIR))
     init_db_cmd='''%s/mysql/scripts/mysql_install_db --user=%s --basedir=%s/mysql --datadir=%s &>/dev/null''' %(SOFT_DIR,Mysql_Run_User,SOFT_DIR,Mysql_DataDir)
