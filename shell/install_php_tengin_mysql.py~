@@ -245,7 +245,7 @@ def compile_mysql():
     if res!=0:
         os.system("chown -R %s:%s %s/mysql" %(Mysql_Run_User,Mysql_Run_User,SOFT_DIR))
     init_db_cmd='''%s/mysql/scripts/mysql_install_db --user=%s --basedir=%s/mysql --datadir=%s &>/dev/null''' %(SOFT_DIR,Mysql_Run_User,SOFT_DIR,Mysql_DataDir)
-    if not os.path.exists("%s/mysql/user.MYD" %Mysql_DataDir):
+    if not os.path.exists("%s/mysql"%Mysql_DataDir):
         res=os.system(init_db_cmd)
         if res!=0:
             os.system("rm -rf /var/lib/mysql && rm -rf %s/*" %Mysql_DataDir)
