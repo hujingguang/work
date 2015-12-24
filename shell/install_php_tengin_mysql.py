@@ -110,7 +110,8 @@ def generate_deamon_scripts():
             }
     stop() {
             echo -n $"Stopping $prog: "
-            killproc -p $php_fpm_pid $prog -QUIT
+            #killproc -p $php_fpm_pid $prog -QUIT
+            killall php-fpm
             sleep 5
             retval=$?
             echo
@@ -239,15 +240,18 @@ def compile_mysql():
     res=os.system(cmd)
     if res!=0:
         os.system("echo 'add mysqld start scripts failed '>/tmp/install.log")
-    os.system("chown -R %s:%s %s/mysql" %(Mysql_Run_User,Mysql_Run_User))
-    init_db_cmd='''%s/mysql/scripts/mysql_install_db --user=%s --basedir=%s/mysql --datadir=%s &>/dev/null''' %(SOFT_DIR,Mysql_Run_User,SOFT_DIR,Mysql_DataDir)
-    res=os.system(init_db_cmd)
+    res=os.system(r"egrep '^%s' /etc/passwd" %Mysql_Run_User)
     if res!=0:
-        os.system("rm -rf /var/lib/mysql && rm -rf %s/*" %Mysql_DataDir)
+        os.system("chown -R %s:%s %s/mysql" %(Mysql_Run_User,Mysql_Run_User,SOFT_DIR))
+    init_db_cmd='''%s/mysql/scripts/mysql_install_db --user=%s --basedir=%s/mysql --datadir=%s &>/dev/null''' %(SOFT_DIR,Mysql_Run_User,SOFT_DIR,Mysql_DataDir)
+    if not os.path.exists("%s/mysql"%Mysql_DataDir):
         res=os.system(init_db_cmd)
         if res!=0:
-            os.system("echo 'init mysql db failed ' >/tmp/install.log")
-            exit(1)
+            os.system("rm -rf /var/lib/mysql && rm -rf %s/*" %Mysql_DataDir)
+            res=os.system(init_db_cmd)
+            if res!=0:
+                os.system("echo 'init mysql db failed ' >/tmp/install.log")
+                exit(1)
     print 'Ok....... compile mysql source success ! '
 def start_install():
     check_network()
