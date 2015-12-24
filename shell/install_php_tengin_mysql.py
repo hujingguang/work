@@ -231,7 +231,7 @@ def compile_mysql():
         os.system("echo 'get mysql source tarball failed ' >/tmp/install.log")
         exit(1)
     configure_args='''-DCMAKE_INSTALL_PREFIX=%s/mysql -DMYSQL_DATADIR=%s -DSYSCONFIGDIR=%s/mysql -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_MEMORY_STORAGE_ENGINE=1 -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DENABLED_LOCAL_INFILE=1 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DEXTRA_CHARSET=utf8 -DWITH_USER=mysql -DWITH_EMBEDDED_SERVER=OFF ''' %(SOFT_DIR,SOFT_DIR,SOFT_DIR)
-    res=os.system("cd /tmp/mysql-%s && cmake %s && make && make install" %(Mysql_Version,configure_args))
+    res=os.system("cd /tmp/mysql-%s && cmake %s &>/dev/null && make &>/dev/null && make install &>/dev/null" %(Mysql_Version,configure_args))
     if res!=0:
         os.system("echo 'compile mysql failed ' >/tmp/install.log ")
         exit(1)
@@ -240,7 +240,7 @@ def compile_mysql():
     if res!=0:
         os.system("echo 'add mysqld start scripts failed '>/tmp/install.log")
     os.system("chown -R %s:%s %s/mysql" %(Mysql_Run_User,Mysql_Run_User))
-    init_db_cmd='''%s/mysql/scripts/mysql_install_db --user=%s --basedir=%s/mysql --datadir=%s ''' %(SOFT_DIR,Mysql_Run_User,SOFT_DIR,Mysql_DataDir)
+    init_db_cmd='''%s/mysql/scripts/mysql_install_db --user=%s --basedir=%s/mysql --datadir=%s &>/dev/null''' %(SOFT_DIR,Mysql_Run_User,SOFT_DIR,Mysql_DataDir)
     res=os.system(init_db_cmd)
     if res!=0:
         os.system("rm -rf /var/lib/mysql && rm -rf %s/*" %Mysql_DataDir)
@@ -263,6 +263,7 @@ def start_install():
     print "Ok .....  php and tengine is installed "
     generate_deamon_scripts()
     if not os.path.exists('%s/mysql' %SOFT_DIR):
+        install_mysql_independecy_packs()
         compile_mysql()
 if __name__=="__main__":
     start_install()
