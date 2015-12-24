@@ -235,6 +235,19 @@ def compile_mysql():
     if res!=0:
         os.system("echo 'compile mysql failed ' >/tmp/install.log ")
         exit(1)
+    cmd='''cd /tmp/mysql-%s/support-files && cp mysql.server /etc/init.d/mysqld && sed -i 's#^basedir=#basedir=%s/mysql#g' /etc/init.d/mysqld && sed -i 's#^datadir=#datadir=%s#g' /etc/init.d/mysqld ''' %(Mysql_Version,SOFT_DIR,Mysql_DataDir)
+    res=os.system(cmd)
+    if res!=0:
+        os.system("echo 'add mysqld start scripts failed '>/tmp/install.log")
+    os.system("chown -R %s:%s %s/mysql" %(Mysql_Run_User,Mysql_Run_User))
+    init_db_cmd='''%s/mysql/scripts/mysql_install_db --user=%s --basedir=%s/mysql --datadir=%s ''' %(SOFT_DIR,Mysql_Run_User,SOFT_DIR,Mysql_DataDir)
+    res=os.system(init_db_cmd)
+    if res!=0:
+        os.system("rm -rf /var/lib/mysql && rm -rf %s/*" %Mysql_DataDir)
+        res=os.system(init_db_cmd)
+        if res!=0:
+            os.system("echo 'init mysql db failed ' >/tmp/install.log")
+            exit(1)
     print 'Ok....... compile mysql source success ! '
 def start_install():
     check_network()
