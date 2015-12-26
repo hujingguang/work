@@ -5,9 +5,9 @@
 HISTSIZE=10000
 HISTTIMEFORMAT="%F %T "
 User=$(whoami)
-w|egrep "^$User" >/tmp/.info
+w|egrep "^$User" >/tmp/.info_$User
 hour=$(date +"%H:%M")
-Login_IP=$(grep $hour /tmp/.info |awk '{print $3}')
+Login_IP=$(grep $hour /tmp/.info_$User |awk '{print $3}')
 DATE=$(date +"%y-%m-%d")
 if [ ! -d /var/.history ]
 then
