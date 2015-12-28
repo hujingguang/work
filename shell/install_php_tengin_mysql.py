@@ -49,7 +49,7 @@ def compile_php():
     if res!=0:
         os.system("echo 'get php source tarbar failed' >%s" %LOG_FILE)
         exit()
-    configure_args='''--prefix=%s/php --enable-fpm --with-fpm-user=%s --with-fpm-group=%s --with-config-file-path=%s/php/etc --disable-ipv6 --with-pcre-regex --with-zlib --enable-calendar --enable-gd-native-ttf --with-freetype-dir --with-mysql --with-mysqli --with-pdo-mysql --enable-sockets --enable-soap --enable-mysqlnd --enable-mbstring ''' %(SOFT_DIR,PHP_Run_User,PHP_Run_User,SOFT_DIR)
+    configure_args='''--prefix=%s/php --enable-fpm --with-fpm-user=%s --with-fpm-group=%s --with-openssl --with-config-file-path=%s/php/etc --disable-ipv6 --with-pcre-regex --with-zlib --enable-calendar --enable-gd-native-ttf --with-freetype-dir --with-mysql --with-mysqli --with-pdo-mysql --enable-sockets --enable-soap --enable-mysqlnd --enable-mbstring ''' %(SOFT_DIR,PHP_Run_User,PHP_Run_User,SOFT_DIR)
     cmd=''' cd /tmp/php-%s && ./configure %s &>/dev/null && make &>/dev/null  && make install &>/dev/null ''' %(PHP_Version,configure_args)
     res=os.system(cmd)
     if res !=0:
