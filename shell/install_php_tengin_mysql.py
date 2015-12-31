@@ -36,7 +36,7 @@ def install_compile_env():
         os.system("echo 'failed to install gcc compile enviroment' >%s" %LOG_FILE)
         exit()
 def install_dependency_packs():
-    cmd='''yum install gd-devel libxml2-devel curl-devel libpng-devel libjpeg-turbo-devel freetype-devel php-mbstring mhash-devel libcurl-devel pcre-devel openssl-devel ncurses-devel bison-devel zlib-devel mysql-server -y &>/dev/null '''
+    cmd='''yum install gd-devel libxml2-devel curl-devel libpng-devel libjpeg-turbo-devel freetype-devel libmcrypt-devel libmcrypt php-mbstring mhash-devel libcurl-devel pcre-devel openssl-devel ncurses-devel bison-devel zlib-devel mysql-server -y &>/dev/null '''
     res=os.system(cmd)
     if res!=0:
         os.system("echo 'failed to install php dependency_packs >%s'" %LOG_FILE)
@@ -49,7 +49,7 @@ def compile_php():
     if res!=0:
         os.system("echo 'get php source tarbar failed' >%s" %LOG_FILE)
         exit()
-    configure_args='''--prefix=%s/php --enable-fpm --with-fpm-user=%s --with-fpm-group=%s --with-openssl --with-config-file-path=%s/php/etc --disable-ipv6 --with-pcre-regex --with-zlib --enable-calendar --enable-gd-native-ttf --with-freetype-dir --with-mysql --with-mysqli --with-pdo-mysql --enable-sockets --enable-soap --enable-mysqlnd --enable-mbstring ''' %(SOFT_DIR,PHP_Run_User,PHP_Run_User,SOFT_DIR)
+    configure_args='''--prefix=%s/php --enable-fpm --with-fpm-user=%s --with-fpm-group=%s --with-openssl --with-mcrypt --with-config-file-path=%s/php/etc --disable-ipv6 --with-pcre-regex --with-zlib --enable-calendar --enable-gd-native-ttf --with-freetype-dir --with-mysql --with-mysqli --with-pdo-mysql --enable-sockets --enable-soap --enable-mysqlnd --enable-mbstring ''' %(SOFT_DIR,PHP_Run_User,PHP_Run_User,SOFT_DIR)
     cmd=''' cd /tmp/php-%s && ./configure %s &>/dev/null && make &>/dev/null  && make install &>/dev/null ''' %(PHP_Version,configure_args)
     res=os.system(cmd)
     if res !=0:

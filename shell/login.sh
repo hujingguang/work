@@ -5,27 +5,28 @@
 HISTSIZE=10000
 HISTTIMEFORMAT="%F %T "
 User=$(whoami)
-w|egrep "^$User" >/tmp/.info_$User
-hour=$(date +"%H:%M")
-Login_IP=$(grep $hour /tmp/.info_$User |awk '{print $3}')
+who|tail -n 1  >/tmp/.info_$User
+Login_IP=$(cat /tmp/.info_$User |awk -F'[)(]' '{print $2}')
 DATE=$(date +"%y-%m-%d")
-if [ ! -d /var/.history ]
+if [ ! -d "/var/.history" ]
 then
-         mkdir /var/.history
-              chmod 777 /var/.history
-fi
-if [ ! -d /var/.history/$User ]
-then
-     mkdir /var/.history/$User
-fi
+             mkdir /var/.history
+                           chmod 777 /var/.history
+                       fi
+                       if [ ! -d "/var/.history/$User" ]
+                       then
+                               mkdir /var/.history/$User
+                           fi
 
-File=/var/.history/${User}/${DATE}-${User}-${Login_IP}
-if [ ! -f  ${File} ]
-then
-    touch $File
-    chattr +a $File
-fi
-HISTFILE=$File
+                           File=/var/.history/${User}/${DATE}_${User}_${Login_IP}
+                           if [ ! -e  "$File" ]
+                                   then
+                                           touch $File
+                                               chattr +a $File
+                                           fi
 
-unset Login_IP File hour User
+                                           HISTFILE=$File
+
+
+                                           unset Login_IP File hour User
 
