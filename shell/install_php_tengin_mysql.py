@@ -224,9 +224,9 @@ def generate_deamon_scripts():
 
 
 def install_mysql_independecy_packs():
-    cmd=''' yum install cmake  ncurses-devel zlib-devel perl-DBI perl-DBD-mysql perl-Time-HiRes perl-IO-Socket-SSL perl-Term-ReadKey -y &>/dev/null'''
+    cmd=''' yum install ncurses-devel zlib-devel perl-DBI perl-DBD-mysql perl-Time-HiRes perl-IO-Socket-SSL perl-Term-ReadKey cmake -y &>/dev/null'''
     res=os.system(cmd)
-    if res !=0:
+    if res != 0:
         os.system("echo 'failed install mysql independency packs ' >/tmp/install.log")
         exit(1)
 
@@ -247,12 +247,17 @@ def compile_mysql():
         os.system("echo 'add mysqld start scripts failed '>/tmp/install.log")
     res=os.system(r"egrep '^%s' /etc/passwd &>/dev/null" %Mysql_Run_User)
     if res!=0:
-        os.system("chown -R %s:%s %s/%s" %(Mysql_Run_User,Mysql_Run_User,SOFT_DIR,Mysql_Dir_Name))
-    init_db_cmd='''%s/%s/scripts/mysql_install_db --user=%s --basedir=%s/%s --datadir=%s &>/dev/null''' %(SOFT_DIR,Mysql_Dir_Name,Mysql_Run_User,SOFT_DIR,Mysql_Dir_Name,Mysql_DataDir)
+        os.system("useradd mysql -s /sbin/nologin")
+    os.system("chown -R %s:%s %s/%s" %(Mysql_Run_User,Mysql_Run_User,SOFT_DIR,Mysql_Dir_Name))
+    init_db_cmd='''%s/%s/scripts/mysql_install_db --user=%s --basedir=%s/%s --datadir=%s ''' %(SOFT_DIR,Mysql_Dir_Name,Mysql_Run_User,SOFT_DIR,Mysql_Dir_Name,Mysql_DataDir)
+    print Mysql_DataDir
+    cmd=''' rm -rf %s/* ''' %Mysql_DataDir
+    os.system(cmd)
     if not os.path.exists("%s/mysql/user.MYD" %Mysql_DataDir):
+        os.system("chown -R %s:%s %s" %(Mysql_Run_User,Mysql_Run_User,Mysql_DataDir))
         res=os.system(init_db_cmd)
         if res!=0:
-            os.system("rm -rf /var/lib/mysql && rm -rf %s/*" %Mysql_DataDir)
+            os.system(r"rm -rf %s/*" %Mysql_DataDir)
             res=os.system(init_db_cmd)
             if res!=0:
                 os.system("echo 'init mysql db failed ' >/tmp/install.log")
@@ -274,6 +279,7 @@ def start_install():
     if not os.path.exists('%s/%s' %(SOFT_DIR,Mysql_Dir_Name)):
         install_mysql_independecy_packs()
         compile_mysql()
+    os.system("rm -rf /tmp/php-%s && rm -rf /tmp/tengine-%s && rm -rf /tmp/mysql-%s" %(PHP_Version,Tengine_Version,Mysql_Version))
 if __name__=="__main__":
     start_install()
 
