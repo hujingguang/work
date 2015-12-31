@@ -3,16 +3,19 @@
 import os
 __author__='Hoo'
 SOFT_DIR="/webdata/opt/local"
+PHP_Dir_Name="php5.6"
+Mysql_Dir_Name='mysql2'
+Tengine_Dir_Name="tengine2"
 LOG_FILE="/tmp/install.log"
 CentOS_Version="6"
-PHP_Version="5.4.40"         #  the available version is: 5.6.16, 5.5.30, 5.4.40 
+PHP_Version="5.6.16"         #  the available version is: 5.6.16, 5.5.30, 5.4.40 
 Tengine_Version="2.1.1"      # the available version is:   2.1.1
 Jemalloc_Version="3.6.0"          # the available version is: 4.0.4, 3.6.0
 PHP_Run_User="www"
 Mysql_Run_User="mysql"
 Tengine_Run_User="www"
 Mysql_Version="5.6.10"       # the available version is : 5.6.10, 5.5.22
-Mysql_DataDir=SOFT_DIR+"/mysql/data"
+Mysql_DataDir=SOFT_DIR+"/"+Mysql_Dir_Name+"/data"
 def check_network():
     res=os.system("ping -c 1 -i 1 120.24.239.32 &>/dev/null")
     if res !=0:
@@ -49,7 +52,7 @@ def compile_php():
     if res!=0:
         os.system("echo 'get php source tarbar failed' >%s" %LOG_FILE)
         exit()
-    configure_args='''--prefix=%s/php --enable-fpm --with-fpm-user=%s --with-fpm-group=%s --with-openssl --with-mcrypt --with-config-file-path=%s/php/etc --disable-ipv6 --with-pcre-regex --with-zlib --enable-calendar --enable-gd-native-ttf --with-freetype-dir --with-mysql --with-mysqli --with-pdo-mysql --enable-sockets --enable-soap --enable-mysqlnd --enable-mbstring ''' %(SOFT_DIR,PHP_Run_User,PHP_Run_User,SOFT_DIR)
+    configure_args='''--prefix=%s/%s --enable-fpm --with-fpm-user=%s --with-fpm-group=%s --with-openssl --with-mcrypt --with-config-file-path=%s/php/etc --disable-ipv6 --with-pcre-regex --with-zlib --enable-calendar --enable-gd-native-ttf --with-freetype-dir --with-mysql --with-mysqli --with-pdo-mysql --enable-sockets --enable-soap --enable-mysqlnd --enable-mbstring ''' %(SOFT_DIR,PHP_Dir_Name,PHP_Run_User,PHP_Run_User,SOFT_DIR)
     cmd=''' cd /tmp/php-%s && ./configure %s &>/dev/null && make &>/dev/null  && make install &>/dev/null ''' %(PHP_Version,configure_args)
     res=os.system(cmd)
     if res !=0:
@@ -58,10 +61,10 @@ def compile_php():
     res=os.system(r"egrep '^%s' /etc/passwd &>/dev/null" %PHP_Run_User)
     if res!=0:
         os.system('useradd %s -s /sbin/nologin' %PHP_Run_User)
-    os.system("cp %s/php/etc/php-fpm.conf.default %s/php/etc/php-fpm.conf " %(SOFT_DIR,SOFT_DIR))
-    os.system("cp /tmp/php-%s/php.ini-production %s/php/etc/php.ini" %(PHP_Version,SOFT_DIR))
+    os.system("cp %s/%s/etc/php-fpm.conf.default %s/%s/etc/php-fpm.conf " %(SOFT_DIR,PHP_Dir_Name,SOFT_DIR,PHP_Dir_Name))
+    os.system("cp /tmp/php-%s/php.ini-production %s/%s/etc/php.ini" %(PHP_Version,SOFT_DIR,PHP_Dir_Name))
 def compile_tengine():
-    configure_args=''' --prefix=%s/tengine --with-jemalloc --with-jemalloc=/tmp/jemalloc-%s --with-http_ssl_module --user=%s --group=%s --with-pcre --with-http_spdy_module --with-http_upstream_session_sticky_module=shared ''' %(SOFT_DIR,Jemalloc_Version,Tengine_Run_User,Tengine_Run_User)
+    configure_args=''' --prefix=%s/%s --with-jemalloc --with-jemalloc=/tmp/jemalloc-%s --with-http_ssl_module --user=%s --group=%s --with-pcre --with-http_spdy_module --with-http_upstream_session_sticky_module=shared ''' %(SOFT_DIR,Tengine_Dir_Name,Jemalloc_Version,Tengine_Run_User,Tengine_Run_User)
     cmd=''' wget http://web.wikiki.cn/jemalloc-%s.tar.bz2 &>/dev/null && mv jemalloc-%s.tar.bz2 /tmp && cd /tmp && tar -xjf jemalloc-%s.tar.bz2 ''' %(Jemalloc_Version,Jemalloc_Version,Jemalloc_Version)
     res=os.system(cmd)
     if res!=0:
@@ -87,15 +90,15 @@ def generate_deamon_scripts():
     #!/bin/bash
     PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin
     export PATH
-    pid_dir=%s/php/var/run
+    pid_dir=%s/%s/var/run
     . /etc/sysconfig/network
     . /etc/init.d/functions
     [ "$NETWORKING" = "no" ] && exit 0
-    php_fpm="%s/php/sbin/php-fpm"
-    PHP_CONF_FILE=%s/php/etc/php.ini
+    php_fpm="%s/%s/sbin/php-fpm"
+    PHP_CONF_FILE=%s/%s/etc/php.ini
     prog=$(basename $php_fpm)
-    lockfile=/var/lock/subsys/php-fpm.lock
-    php_fpm_pid="%s/php/var/run/php-fpm.pid"
+    lockfile=/var/lock/subsys/%s-fpm.lock
+    php_fpm_pid="%s/%s/var/run/php-fpm.pid"
     ulimit -SHn 65535 
     start() {
             [ -x $php_fpm ] || exit 1
@@ -140,18 +143,18 @@ def generate_deamon_scripts():
     echo $"Usage: $0 {start|stop|status|restart}"
     exit 2
     esac
-    ''' %(SOFT_DIR,SOFT_DIR,SOFT_DIR,SOFT_DIR)
+    ''' %(SOFT_DIR,PHP_Dir_Name,SOFT_DIR,PHP_Dir_Name,SOFT_DIR,PHP_Dir_Name,PHP_Dir_Name,SOFT_DIR,PHP_Dir_Name)
 
     nginx_script_contents=''' 
     #!/bin/bash
     . /etc/rc.d/init.d/functions
     . /etc/sysconfig/network
     [ "$NETWORKING" = "no" ] && exit 0
-    nginx="%s/tengine/sbin/nginx"
+    nginx="%s/%s/sbin/nginx"
     prog=$(basename $nginx)
-    NGINX_CONF_FILE="%s/tengine/conf/nginx.conf"
-    lockfile=/var/lock/subsys/nginx.lock
-    nginx_pid="%s/tengine/logs/nginx.pid"
+    NGINX_CONF_FILE="%s/%s/conf/nginx.conf"
+    lockfile=/var/lock/subsys/nginx_%s.lock
+    nginx_pid="%s/%s/logs/nginx.pid"
     start() {
     [ -x $nginx ] || exit 5
     [ -f $NGINX_CONF_FILE ] || exit 6
@@ -201,20 +204,21 @@ def generate_deamon_scripts():
     echo $"Usage: $0 {start|stop|status|restart|reload}"
     exit 2
     esac
-    ''' %(SOFT_DIR,SOFT_DIR,SOFT_DIR)
-
-    if not os.path.exists("/etc/init.d/php-fpm"):
-        php_fpm_script=open("/etc/init.d/php-fpm","w")
+    ''' %(SOFT_DIR,Tengine_Dir_Name,SOFT_DIR,Tengine_Dir_Name,Tengine_Dir_Name,SOFT_DIR,Tengine_Dir_Name)
+    php_script_name="/etc/init.d/%s-fpm" %PHP_Dir_Name
+    tengine_script_name="/etc/init.d/%s" %Tengine_Dir_Name
+    if not os.path.exists(php_script_name):
+        php_fpm_script=open(php_script_name,"w")
         php_fpm_script.write(php_script_contents)
         php_fpm_script.close()
-        res=os.system("chmod +x /etc/init.d/php-fpm ")
+        res=os.system("chmod +x %s " %php_script_name)
         if res!=0:
             os.system("echo 'add php-fpm deamon failed ' >> /tmp/install.log")
-    if not os.path.exists("/etc/init.d/nginx"):
-        nginx_script=open("/etc/init.d/nginx","w")
+    if not os.path.exists(tengine_script_name):
+        nginx_script=open(tengine_script_name,"w")
         nginx_script.write(nginx_script_contents)
         nginx_script.close()
-        res=os.system("chmod +x /etc/init.d/nginx ")
+        res=os.system("chmod +x %s" %tengine_script_name)
         if res!=0:
             os.system("echo 'add nginx deamon faild ' >>/tmp/install.log ")
 
@@ -232,19 +236,19 @@ def compile_mysql():
     if res!=0:
         os.system("echo 'get mysql source tarball failed ' >/tmp/install.log")
         exit(1)
-    configure_args='''-DCMAKE_INSTALL_PREFIX=%s/mysql -DMYSQL_DATADIR=%s -DSYSCONFIGDIR=%s/mysql -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_MEMORY_STORAGE_ENGINE=1 -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DENABLED_LOCAL_INFILE=1 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DEXTRA_CHARSET=utf8 -DWITH_USER=%s -DWITH_EMBEDDED_SERVER=OFF ''' %(SOFT_DIR,SOFT_DIR,SOFT_DIR,Mysql_Run_User)
+    configure_args='''-DCMAKE_INSTALL_PREFIX=%s/%s -DMYSQL_DATADIR=%s -DSYSCONFIGDIR=%s/%s -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_MEMORY_STORAGE_ENGINE=1 -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_READLINE=1 -DENABLED_LOCAL_INFILE=1 -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DEXTRA_CHARSET=utf8 -DWITH_USER=%s -DWITH_EMBEDDED_SERVER=OFF ''' %(SOFT_DIR,Mysql_Dir_Name,SOFT_DIR,SOFT_DIR,Mysql_Dir_Name,Mysql_Run_User)
     res=os.system("cd /tmp/mysql-%s && cmake %s &>/dev/null && make &>/dev/null && make install &>/dev/null" %(Mysql_Version,configure_args))
     if res!=0:
         os.system("echo 'compile mysql failed ' >/tmp/install.log ")
         exit(1)
-    cmd='''cd /tmp/mysql-%s/support-files && cp mysql.server /etc/init.d/mysqld && sed -i 's#^basedir=#basedir=%s/mysql#g' /etc/init.d/mysqld && sed -i 's#^datadir=#datadir=%s#g' /etc/init.d/mysqld ''' %(Mysql_Version,SOFT_DIR,Mysql_DataDir)
+    cmd='''cd /tmp/mysql-%s/support-files && cp mysql.server /etc/init.d/%s && sed -i 's#^basedir=#basedir=%s/%s#g' /etc/init.d/%s && sed -i 's#^datadir=#datadir=%s#g' /etc/init.d/%s ''' %(Mysql_Version,Mysql_Dir_Name,SOFT_DIR,Mysql_Dir_Name,Mysql_Dir_Name,Mysql_DataDir,Mysql_Dir_Name)
     res=os.system(cmd)
     if res!=0:
         os.system("echo 'add mysqld start scripts failed '>/tmp/install.log")
     res=os.system(r"egrep '^%s' /etc/passwd &>/dev/null" %Mysql_Run_User)
     if res!=0:
-        os.system("chown -R %s:%s %s/mysql" %(Mysql_Run_User,Mysql_Run_User,SOFT_DIR))
-    init_db_cmd='''%s/mysql/scripts/mysql_install_db --user=%s --basedir=%s/mysql --datadir=%s &>/dev/null''' %(SOFT_DIR,Mysql_Run_User,SOFT_DIR,Mysql_DataDir)
+        os.system("chown -R %s:%s %s/%s" %(Mysql_Run_User,Mysql_Run_User,SOFT_DIR,Mysql_Dir_Name))
+    init_db_cmd='''%s/%s/scripts/mysql_install_db --user=%s --basedir=%s/%s --datadir=%s &>/dev/null''' %(SOFT_DIR,Mysql_Dir_Name,Mysql_Run_User,SOFT_DIR,Mysql_Dir_Name,Mysql_DataDir)
     if not os.path.exists("%s/mysql/user.MYD" %Mysql_DataDir):
         res=os.system(init_db_cmd)
         if res!=0:
@@ -261,13 +265,13 @@ def start_install():
     if res!=0:
         install_compile_env()
     install_dependency_packs()
-    if not os.path.exists('%s/php' %SOFT_DIR):
+    if not os.path.exists('%s/%s' %(SOFT_DIR,PHP_Dir_Name)):
         compile_php()
-    if not os.path.exists('%s/tengine' %SOFT_DIR):
+    if not os.path.exists('%s/%s' %(SOFT_DIR,Tengine_Dir_Name)):
         compile_tengine()
     print "Ok .....  php and tengine is installed "
     generate_deamon_scripts()
-    if not os.path.exists('%s/mysql' %SOFT_DIR):
+    if not os.path.exists('%s/%s' %(SOFT_DIR,Mysql_Dir_Name)):
         install_mysql_independecy_packs()
         compile_mysql()
 if __name__=="__main__":
