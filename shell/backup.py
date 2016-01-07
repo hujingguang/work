@@ -4,13 +4,12 @@ import os
 import commands
 import time
 Backup_Dir="/webdata/backup"
-Host_Dict={'web1':['root@121.41.76.121','password'],
-           'web2':['root@121.40.173.23','password']
+Host_Dict={'web1':['root@121.4.76.121','password'],
+           'pos':['root@121.4.81.229','password']
       }
 Backup_Dict={'web1':['/etc/init.d/log_roate.sh','/var/spool/cron/root','/webdata/opt/local/php','/etc/init.d/zabbix_agentd','/soft/zabbix','/webdata/opt/local/sersync','/webdata/conf','/webdata/webdir/liquan','/etc/rc.local','/etc/sysconfig/iptables','/webdata/opt/local/tengine/conf/nginx.conf'],
-             'web2':['/etc/init.d/log_roate.sh','/var/spool/cron/root','/webdata/opt/local/php','/etc/init.d/zabbix_agentd','/soft/zabbix','/webdata/opt/local/sersync','/webdata/conf','/etc/rc.local','/etc/sysconfig/iptables','/webdata/opt/local/tengine/conf/nginx.conf'],
+             'pos':['/webdata/opt/local/tengine/conf/nginx.conf','/webdata/conf'] 
        }
-
 
 if not os.path.exists(Backup_Dir):
     os.system('mkdir -p %s' %Backup_Dir)
@@ -21,7 +20,7 @@ def loopfun():
         if res!=0:
             break
         else:
-            time.sleep(10)
+            time.sleep(5)
 def backup():
     global Host_Dict,Backup_Dict,Backup_Dir
     for k,v in Host_Dict.iteritems():
@@ -41,7 +40,8 @@ def backup():
             ch=pexpect.spawn('/bin/bash /tmp/.run.sh')
             res=ch.expect(['yes','assword:',pexpect.EOF,pexpect.TIMEOUT],timeout=120)
             if res == 0:
-                ch.sendline('yes')
+                ch.sendline('yes\n')
+                ch.expect(['assword:',pexpect.EOF,pexpect.TIMEOUT],timeout=120)
                 ch.sendline(passwd+'\n')
                 loopfun()
                 ch.close(force=True)
