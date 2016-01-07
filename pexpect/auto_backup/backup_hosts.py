@@ -72,7 +72,8 @@ def backup(path,hosts,service_name):
             res=ch.expect(['yes','assword:',pexpect.EOF],timeout=120)
             if res == 0:
                 logging.info('begin to connect the host: %' %host)
-                ch.sendline('yes')
+                ch.sendline('yes\n')
+                ch.expect(['assword:',pexpect.EOF,pexpect.TIMEOUT],timeout=120)
                 ch.sendline(passwd+'\n')
                 ch.expect([']#',pexpect.EOF],timeout=180)
                 ch.close()
@@ -100,7 +101,8 @@ def backup(path,hosts,service_name):
             ch=pexpect.spawn(new_cmd)
             res=ch.expect(['yes/no','assword:',pexpect.EOF,pexpect.TIMEOUT],timeout=60)
             if res ==0:
-                ch.sendline('yes')
+                ch.sendline('yes\n')
+                ch.expect(['assword:',pexpect.EOF,pexpect.TIMEOUT],timeout=120)
                 ch.sendline(passwd+'\n')
                 ch.expect([']#',pexpect.EOF,pexpect.TIMEOUT],timeout=120)
                 ch.close()
