@@ -22,6 +22,7 @@ then
                            if [ ! -e  "$File" ]
                                    then
                                            touch $File
+                                               chattr +a $File
                                            fi
 
                                            HISTFILE=$File
