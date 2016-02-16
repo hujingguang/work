@@ -281,6 +281,7 @@ def start_install():
         compile_mysql()
     os.system("rm -rf /tmp/php-%s && rm -rf /tmp/tengine-%s && rm -rf /tmp/mysql-%s" %(PHP_Version,Tengine_Version,Mysql_Version))
 if __name__=="__main__":
+    os.system('yum clean all && yum makecache')
     start_install()
 
 
