@@ -3,9 +3,9 @@
 import os
 __author__='Hoo'
 SOFT_DIR="/webdata/opt/local"
-PHP_Dir_Name="php5.6"
-Mysql_Dir_Name='mysql2'
-Tengine_Dir_Name="tengine2"
+PHP_Dir_Name="php"
+Mysql_Dir_Name='mysql'
+Tengine_Dir_Name="tengine"
 LOG_FILE="/tmp/install.log"
 CentOS_Version="6"
 PHP_Version="5.6.16"         #  the available version is: 5.6.16, 5.5.30, 5.4.40 
