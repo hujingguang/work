@@ -39,11 +39,12 @@ def install_compile_env():
         os.system("echo 'failed to install gcc compile enviroment' >%s" %LOG_FILE)
         exit()
 def install_dependency_packs():
-    cmd='''yum install gd-devel libxml2-devel curl-devel libpng-devel libjpeg-turbo-devel freetype-devel libmcrypt-devel libmcrypt php-mbstring mhash-devel libcurl-devel pcre-devel openssl-devel ncurses-devel bison-devel zlib-devel mysql-server -y &>/dev/null '''
+    cmd='''yum install openldap openldap-devel  libxslt libsxlt-devel  libxslt-devel gd-devel libxml2-devel curl-devel libpng-devel libjpeg-turbo-devel freetype-devel libmcrypt-devel libmcrypt php-mbstring mhash-devel libcurl-devel pcre-devel openssl-devel ncurses-devel bison-devel zlib-devel mysql-server -y &>/dev/null '''
     res=os.system(cmd)
     if res!=0:
         os.system("echo 'failed to install php dependency_packs >%s'" %LOG_FILE)
         exit()
+    os.system(r'cp -frp /usr/lib64/libldap* /usr/lib/')
     
 def compile_php():
     tar_name="php-%s.tar.gz" %PHP_Version
@@ -52,7 +53,7 @@ def compile_php():
     if res!=0:
         os.system("echo 'get php source tarbar failed' >%s" %LOG_FILE)
         exit()
-    configure_args='''--prefix=%s/%s --enable-fpm --with-fpm-user=%s --with-fpm-group=%s --with-openssl --with-mcrypt --with-config-file-path=%s/php/etc --disable-ipv6 --with-pcre-regex --with-zlib --enable-calendar --enable-gd-native-ttf --with-freetype-dir --with-mysql --with-mysqli --with-pdo-mysql --enable-sockets --enable-soap --enable-mysqlnd --enable-mbstring ''' %(SOFT_DIR,PHP_Dir_Name,PHP_Run_User,PHP_Run_User,SOFT_DIR)
+    configure_args='''--prefix=%s/%s  --with-fpm-user=%s --with-fpm-group=%s  --with-config-file-path=%s/%s/etc --with-openssl --enable-fpm --with-mysql --with-mysqli --with-freetype-dir --with-jpeg-dir --with-png-dir --with-zlib --with-libxml-dir=shared --enable-xml --with-curl --with-mhash --with-mcrypt --with-gd --enable-gd-native-ttf --with-xsl --with-ldap --with-ldap-sasl --without-pear --enable-zip --enable-soap --enable-mbstring --enable-sockets --enable-pcntl --enable-bcmath --enable-shmop --enable-sysvsem --enable-inline-optimization --disable-rpath --enable-mbregex --with-xmlrpc --enable-wddx --enable-ftp ''' %(SOFT_DIR,PHP_Dir_Name,PHP_Run_User,PHP_Run_User,SOFT_DIR,PHP_Dir_Name)
     cmd=''' cd /tmp/php-%s && ./configure %s &>/dev/null && make &>/dev/null  && make install &>/dev/null ''' %(PHP_Version,configure_args)
     res=os.system(cmd)
     if res !=0:
@@ -214,6 +215,8 @@ def generate_deamon_scripts():
         res=os.system("chmod +x %s " %php_script_name)
         if res!=0:
             os.system("echo 'add php-fpm deamon failed ' >> /tmp/install.log")
+        else:
+            os.system("chkconfig --add %s-fpm && chkconfig --level 35 %s-fpm on " %(PHP_Dir_Name,PHP_Dir_Name))
     if not os.path.exists(tengine_script_name):
         nginx_script=open(tengine_script_name,"w")
         nginx_script.write(nginx_script_contents)
@@ -221,7 +224,8 @@ def generate_deamon_scripts():
         res=os.system("chmod +x %s" %tengine_script_name)
         if res!=0:
             os.system("echo 'add nginx deamon faild ' >>/tmp/install.log ")
-
+        else:
+            os.system('chkconfig --add  %s && chkconfig --level 35 %s on ' %(Tengine_Dir_Name,Tengine_Dir_Name))
 
 def install_mysql_independecy_packs():
     cmd=''' yum install ncurses-devel zlib-devel perl-DBI perl-DBD-mysql perl-Time-HiRes perl-IO-Socket-SSL perl-Term-ReadKey cmake -y &>/dev/null'''
@@ -279,9 +283,9 @@ def start_install():
     if not os.path.exists('%s/%s' %(SOFT_DIR,Mysql_Dir_Name)):
         install_mysql_independecy_packs()
         compile_mysql()
+        	os.system('mv /etc/init.d/mysql /etc/init.d/mysqld')
     os.system("rm -rf /tmp/php-%s && rm -rf /tmp/tengine-%s && rm -rf /tmp/mysql-%s" %(PHP_Version,Tengine_Version,Mysql_Version))
 if __name__=="__main__":
-    os.system('yum clean all && yum makecache')
     start_install()
 
 
