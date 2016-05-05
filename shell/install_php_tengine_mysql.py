@@ -283,7 +283,9 @@ def start_install():
     if not os.path.exists('%s/%s' %(SOFT_DIR,Mysql_Dir_Name)):
         install_mysql_independecy_packs()
         compile_mysql()
-        	os.system('mv /etc/init.d/mysql /etc/init.d/mysqld')
+        os.system('mv /etc/init.d/mysql /etc/init.d/mysqld')
+        os.system('mv /etc/my.cnf /etc/my.cnf.bak')
+        os.system('rpm -ih mysql -y &>/dev/null')
     os.system("rm -rf /tmp/php-%s && rm -rf /tmp/tengine-%s && rm -rf /tmp/mysql-%s" %(PHP_Version,Tengine_Version,Mysql_Version))
 if __name__=="__main__":
     start_install()
